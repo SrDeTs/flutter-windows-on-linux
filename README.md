@@ -18,7 +18,7 @@ partir de um host Linux.
 > [!IMPORTANT]
 > Este projeto é experimental e não é desenvolvido, mantido ou suportado pela
 > equipe Flutter ou pelo Google. O resultado precisa ser testado em uma máquina
-> Windows real antes de qualquer distribuição.
+> Windows real
 
 ## Objetivo
 
