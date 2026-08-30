@@ -3,12 +3,19 @@
 
 !define APP_NAME "MyCalls"
 !define COMPANY "MyCalls"
-!define VERSION "1.0.10"
-!define BUNDLE "/home/michel/Flutter/MyCalls/build/win_cross/release/mycalls_app"
+!ifndef VERSION
+  !error "VERSION deve ser informado pelo script de build"
+!endif
+!ifndef BUNDLE
+  !error "BUNDLE deve ser informado pelo script de build"
+!endif
+!ifndef OUTPUT_DIR
+  !error "OUTPUT_DIR deve ser informado pelo script de build"
+!endif
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\MyCalls"
 
 Name "${APP_NAME} ${VERSION}"
-OutFile "/home/michel/Flutter/MyCalls/pacotes/MyCalls-Setup-${VERSION}.exe"
+OutFile "${OUTPUT_DIR}/MyCalls-Setup-${VERSION}.exe"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "${UNINST_KEY}" "InstallLocation"
 RequestExecutionLevel admin
