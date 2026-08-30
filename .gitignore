@@ -1,4 +1,73 @@
-node_modules
-package.json
-package-lock.json
-bun.lock
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Dart e Flutter
+**/.dart_tool/
+**/.packages
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/coverage/
+**/doc/api/
+/build/
+/flutter_build/build/
+/flutter_build/example/build/
+*.log
+
+# CMake e Ninja
+**/CMakeCache.txt
+**/CMakeFiles/
+**/cmake_install.cmake
+**/compile_commands.json
+**/.ninja_deps
+**/.ninja_log
+**/build.ninja
+
+# Toolchains, SDKs e caches baixados localmente
+/.msvc2/
+/.cppwinrt/
+/.flutter_build/
+/.flutter_win/
+/.flutter_win_cross_cache/
+/.wine/
+/wineprefix/
+/downloads/
+/toolchains/
+/engine-artifacts/
+llvm-mingw-*/
+*.tar
+*.tar.gz
+*.tar.xz
+*.7z
+
+# Artefatos de compilação e empacotamento
+/pacotes/
+/dist/
+/out/
+*.exe
+*.dll
+*.lib
+*.exp
+*.obj
+*.pdb
+*.msi
+*.msix
+*.zip
+
+# Configurações locais, credenciais e assinatura
+**/config.yaml
+!**/config.example.yaml
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+*.jks
+*.keystore
+
