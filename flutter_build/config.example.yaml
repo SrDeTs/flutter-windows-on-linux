@@ -1,0 +1,15 @@
+#
+#
+
+host: 100.65.70.35
+
+username: ubuntu
+
+password: your-password-here
+
+port: 22
+
+auto_copy: true
+
+#   C:/flutter_build/flutter_build_example
+remote_dir: C:/flutter_build

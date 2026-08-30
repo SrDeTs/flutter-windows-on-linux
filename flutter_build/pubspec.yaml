@@ -1,0 +1,35 @@
+name: flutter_build
+description: >-
+  Cross-compile Flutter Windows (x86_64) desktop apps on Linux using
+  LLVM-MinGW + Wine. No MSVC, no Windows SDK, no Windows machine required.
+version: 0.1.0-dev
+
+# TODO(before `dart pub publish`): replace OWNER/flutter_build with the real
+# GitHub path. pub.dev requires a reachable public repository URL.
+repository: https://github.com/OWNER/flutter_build
+issue_tracker: https://github.com/OWNER/flutter_build/issues
+
+topics:
+  - flutter
+  - windows
+  - cross-compile
+  - mingw
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+executables:
+  flutter_build: flutter_build
+
+dependencies:
+  args: ^2.5.0
+  archive: ^3.6.1
+  crypto: ^3.0.3
+  http: ^1.2.1
+  path: ^1.9.0
+  pub_semver: ^2.1.4
+  yaml: ^3.1.2
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0

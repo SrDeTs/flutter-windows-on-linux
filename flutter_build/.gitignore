@@ -1,0 +1,47 @@
+# ─── Dart / Flutter ───────────────────────────────────────────
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+/build/
+pubspec.lock
+doc/api/
+coverage/
+*.log
+
+# ─── flutter_win runtime cache ────────────────────────────────
+# Default location is $HOME/.flutter_win (see lib/src/cache_paths.dart).
+# This guard covers `--cache-dir .flutter_win` used from inside the repo.
+.flutter_win/
+
+# ─── Cross-toolchain artefacts (in case a user unpacks in-repo) ─
+llvm-mingw-*/
+*.tar.xz
+*.tar.gz
+
+# ─── IDE / editors ────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+
+# ─── AI assistants / local scratch ────────────────────────────
+.claude/
+.qoder/
+.cursor/
+.aider*
+.env
+.env.*
+
+# ─── Local deploy config (contains SSH credentials) ───────────
+# 真实部署配置含 SSH 密码，不提交；仅提交 config.example.yaml 模板。
+config.yaml
+
+# ─── OS ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# Local toolchain caches (should live in ~/.flutter_win_cross by default)
+.flutter_win_cross_cache/
