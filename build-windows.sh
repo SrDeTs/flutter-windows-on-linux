@@ -4,7 +4,8 @@
 #   - Flutter global + wine + nsis + llvm-mingw (/opt/llvm-mingw)
 #   - ~/.msvc2  → MSVC+SDK+ATL via msvc-wine/vsdownload.py + install.sh
 #   - ~/.cppwinrt/include → projeções C++/WinRT geradas por cppwinrt.exe (wine)
-#   - .opencode/flutter_build ativado: dart pub global activate --source path .
+#   - Builder ativado com:
+#     dart pub global activate --source path .windows-cross-build/flutter_build
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
