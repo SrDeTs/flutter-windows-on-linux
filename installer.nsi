@@ -1,5 +1,8 @@
 ; MyCalls Windows installer (gerado fora da árvore do app)
 !include "MUI2.nsh"
+!include "FileFunc.nsh"
+!include "LogicLib.nsh"
+!include "WinMessages.nsh"
 
 !define APP_NAME "MyCalls"
 !define COMPANY "MyCalls"
@@ -18,7 +21,10 @@ Name "${APP_NAME} ${VERSION}"
 OutFile "${OUTPUT_DIR}/MyCalls-Setup-${VERSION}.exe"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "${UNINST_KEY}" "InstallLocation"
-RequestExecutionLevel admin
+; Keep the executable launchable by clients older than build 18, which used
+; CreateProcess and failed with ERROR_ELEVATION_REQUIRED. The bootstrap starts
+; as the current user and explicitly relaunches itself through the UAC prompt.
+RequestExecutionLevel user
 SetCompressor /SOLID lzma
 
 !insertmacro MUI_PAGE_DIRECTORY
@@ -27,7 +33,26 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "PortugueseBR"
 
+Function .onInit
+  ${GetParameters} $R0
+  ClearErrors
+  ${GetOptions} $R0 "/ELEVATED" $R1
+  ${If} ${Errors}
+    ClearErrors
+    ExecShell "runas" "$EXEPATH" "/ELEVATED"
+    Quit
+  ${EndIf}
+FunctionEnd
+
 Section "Install"
+  ; The updater launches this installer from MyCalls. Ask the running app to
+  ; close before replacing its executable and DLLs.
+  FindWindow $0 "FLUTTER_RUNNER_WIN32_WINDOW" "MyCalls"
+  ${If} $0 != 0
+    SendMessage $0 ${WM_CLOSE} 0 0 /TIMEOUT=5000
+    Sleep 500
+  ${EndIf}
+
   SetOutPath "$INSTDIR"
   File /r "${BUNDLE}\*.*"
 
