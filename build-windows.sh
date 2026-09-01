@@ -26,15 +26,38 @@ fi
 BUILD="${BUILD:-$PWD/build/win_cross/release/cmake_build/sidecar/import}"
 export SIDECAR_IMPORT_LIBS="$BUILD/flutter_webrtc_plugin_import.lib;$BUILD/livekit_client_plugin_import.lib;$BUILD/permission_handler_windows_plugin_import.lib;$BUILD/share_plus_plugin_import.lib;$BUILD/connectivity_plus_plugin_import.lib;$BUILD/flutter_secure_storage_windows_plugin_import.lib;$BUILD/audioplayers_windows_plugin_import.lib"
 
+APP_VERSION_SPEC=$(grep -m1 '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//')
+if [[ ! "$APP_VERSION_SPEC" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$ ]]; then
+  echo "Erro: versão inválida no pubspec.yaml: $APP_VERSION_SPEC" >&2
+  exit 1
+fi
+VERSION="${APP_VERSION_SPEC%%+*}"
+APP_VERSION_STAMP="build/win_cross/release/app-version.inputs"
+mkdir -p "$(dirname "$APP_VERSION_STAMP")"
+if [[ ! -f "$APP_VERSION_STAMP" || "$(<"$APP_VERSION_STAMP")" != "$APP_VERSION_SPEC" ]]; then
+  # The cross-builder's incremental CMake cache does not otherwise notice a
+  # pubspec-only version change. Force just the source/configuration stages so
+  # Runner.rc receives the current FLUTTER_VERSION and build number.
+  rm -f \
+    build/win_cross/release/intermediates/windows_source_staging.stamp \
+    build/win_cross/release/cmake_build/.flutter_build_configure.stamp
+fi
+
 flutter_build windows --release -D "MYCALLS_FLUTTER_VERSION=$FLUTTER_VERSION"
+printf '%s' "$APP_VERSION_SPEC" >"$APP_VERSION_STAMP.tmp"
+mv "$APP_VERSION_STAMP.tmp" "$APP_VERSION_STAMP"
 
 echo "Bundle: build/win_cross/release/mycalls_app/"
 
-# ── Pacote portátil .zip → pacotes/ ──
-VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | cut -d+ -f1)
 BUNDLE_DIR="build/win_cross/release/mycalls_app"
-ZIP_OUT="pacotes/MyCalls-${VERSION}-windows-portable.zip"
 ROOT="$(pwd)"
+if [[ ! -f "$BUNDLE_DIR/MyCalls.exe" ]]; then
+  echo "Erro: o cross-build não gerou $BUNDLE_DIR/MyCalls.exe." >&2
+  exit 1
+fi
+# flutter_build historically kept a pubspec-name alias beside BINARY_NAME.
+# MyCalls.exe is the only supported entry point and the only one packaged.
+rm -f "$BUNDLE_DIR/mycalls_app.exe"
 mkdir -p pacotes
 CACHE_DIR="build/win_cross/release/package_cache"
 mkdir -p "$CACHE_DIR"
@@ -49,21 +72,30 @@ BUNDLE_FINGERPRINT=$(
     cut -d' ' -f1
 )
 
-ZIP_STAMP="$CACHE_DIR/portable-zip.inputs"
-ZIP_FINGERPRINT=$(printf 'portable-zip-v2\0%s\0%s' "$VERSION" "$BUNDLE_FINGERPRINT" | sha256sum | cut -d' ' -f1)
-if [[ -f "$ZIP_OUT" && -f "$ZIP_STAMP" && "$(<"$ZIP_STAMP")" == "$ZIP_FINGERPRINT" ]]; then
-  echo "Zip portátil não mudou; reutilizando: $ZIP_OUT"
-else
-  (
-    cd "$BUNDLE_DIR" &&
-    bsdtar -a -cf "$ROOT/$ZIP_OUT" -- *.exe *.dll data
-  )
-  printf '%s' "$ZIP_FINGERPRINT" >"$ZIP_STAMP.tmp"
-  mv "$ZIP_STAMP.tmp" "$ZIP_STAMP"
-  echo "Zip portátil: $ZIP_OUT"
+# O alvo windows-cross-installer entrega somente o instalador. O pacote
+# portátil continua sendo gerado exclusivamente pelo make windows-cross.
+if [[ "${INSTALLER:-0}" != "1" ]]; then
+  ZIP_OUT="pacotes/MyCalls-${VERSION}-windows-portable.zip"
+  ZIP_STAMP="$CACHE_DIR/portable-zip.inputs"
+  ZIP_FINGERPRINT=$(printf 'portable-zip-v2\0%s\0%s' "$VERSION" "$BUNDLE_FINGERPRINT" | sha256sum | cut -d' ' -f1)
+  if [[ -f "$ZIP_OUT" && -f "$ZIP_STAMP" && "$(<"$ZIP_STAMP")" == "$ZIP_FINGERPRINT" ]]; then
+    echo "Zip portátil não mudou; reutilizando: $ZIP_OUT"
+  else
+    (
+      cd "$BUNDLE_DIR" &&
+      bsdtar -a -cf "$ROOT/$ZIP_OUT" -- *.exe *.dll data
+    )
+    printf '%s' "$ZIP_FINGERPRINT" >"$ZIP_STAMP.tmp"
+    mv "$ZIP_STAMP.tmp" "$ZIP_STAMP"
+    echo "Zip portátil: $ZIP_OUT"
+  fi
 fi
 
-if command -v makensis >/dev/null && [[ "${INSTALLER:-0}" == "1" ]]; then
+if [[ "${INSTALLER:-0}" == "1" ]]; then
+  if ! command -v makensis >/dev/null; then
+    echo "Erro: makensis é necessário para gerar o instalador NSIS." >&2
+    exit 1
+  fi
   INSTALLER_OUT="pacotes/MyCalls-Setup-${VERSION}.exe"
   INSTALLER_STAMP="$CACHE_DIR/installer.inputs"
   NSI_FINGERPRINT=$(sha256sum scripts/installer.nsi | cut -d' ' -f1)
